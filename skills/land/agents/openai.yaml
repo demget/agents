@@ -1,0 +1,4 @@
+interface:
+  display_name: "Land"
+  short_description: "Prove, review, file, babysit, and merge a PR unattended"
+  default_prompt: "Use $land to take this to a merged PR. I am not watching this thread."

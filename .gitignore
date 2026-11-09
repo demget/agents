@@ -1,0 +1,8 @@
+.DS_Store
+CLAUDE.local.md
+AGENTS.local.md
+.env
+.env.*
+!.env.example
+*.pem
+*.key
