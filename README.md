@@ -8,7 +8,7 @@ My instructions, skills and Claude Code settings, shared by every machine I work
 | `skills/` | Skills for both tools. Codex reads this directory itself; Claude gets a link per skill in `~/.claude/skills`. |
 | `claude/` | Claude Code only: `settings.json`, its hooks and Claude-only skills. `hooks/allow-tmp-rm.py` approves, in bypass mode, the prompt Claude Code raises before an `rm` of a `/tmp` directory the shell is inside. |
 | `install.sh` | Links everything into place. Safe to re-run. |
-| `sync.sh` | Commits local edits, rebases onto GitHub, pushes and re-runs `install.sh`. |
+| `sync.sh` | Run by hand: pulls from GitHub, pushes the commits you made and re-runs `install.sh`. Never commits. |
 
 ## A new machine
 
@@ -20,11 +20,11 @@ Files `install.sh` replaces go to `~/.claude/backups/agents-<time>/`. Sign-ins n
 
 ## Staying in sync
 
-Claude Code's `SessionStart` hook runs `sync.sh`, which syncs in the background at most every 10 minutes, so an edit made on one machine reaches the others by their next session. Tracked edits are committed as `chore(sync): update shared configuration`; new files must be reviewed and staged manually. Commit by hand first when you want a better message. When a sync fails (a conflict, a rejected push), the next session's agent is told why; fix it, then run `~/.agents/sync.sh --now`.
+Nothing syncs on its own: this repository is public. To publish a change, review `git diff`, commit only what should be public, then run `~/.agents/sync.sh --now` on that machine and on each other machine to pull it. `sync.sh` refuses to run while `~/.agents` has uncommitted or untracked changes, so nothing reaches GitHub without a commit you made.
 
 A machine's own text in its generated instruction files lives in a marked block, `<!-- name: … -->` to `<!-- /name -->`, and survives `install.sh`. Keep hostnames, deployment details, credentials and private project instructions in local files, not in this repository.
 
-If the remote history has been replaced, stop automatic sync on every existing machine and make a fresh clone after saving local work privately. Do not rebase or merge the old history into the new repository. The updated sync script refuses unrelated or rewritten upstream history; old installed copies must still be replaced manually.
+If the remote history has been replaced, make a fresh clone after saving local work privately. Do not rebase or merge the old history into the new repository. `sync.sh` refuses unrelated or rewritten upstream history. A machine still running an older `sync.sh` (one that commits on its own or runs from a `SessionStart` hook) must have that hook removed and get a fresh clone before it syncs again.
 
 ## From tstack
 

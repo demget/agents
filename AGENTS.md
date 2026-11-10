@@ -30,6 +30,6 @@
 
 # My machines
 
-- **My global setup lives in `~/.agents`, the [demget/agents](https://github.com/demget/agents) repo, shared by every machine.** Change my global instructions, skills and Claude Code settings there, never in `~/.claude` or `~/.codex` directly, then run `~/.agents/sync.sh --now` so the change reaches GitHub and the other machines.
+- **My global setup lives in `~/.agents`, the [demget/agents](https://github.com/demget/agents) repo, shared by every machine.** Change my global instructions, skills and Claude Code settings there, never in `~/.claude` or `~/.codex` directly. The repo is public and syncs only when I ask: then commit the reviewed change and run `~/.agents/sync.sh --now`, which never commits on its own.
 
 - **When running inside WSL2, inspect host hardware from Windows.** Use tools such as `powershell.exe` or `nvidia-smi.exe`, because WSL may expose only part of the host's memory and devices.

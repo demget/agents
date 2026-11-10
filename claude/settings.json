@@ -35,16 +35,6 @@
     "anthropic-skills:docs": "off"
   },
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.agents/sync.sh"
-          }
-        ]
-      }
-    ],
     "PermissionRequest": [
       {
         "matcher": "Bash",
