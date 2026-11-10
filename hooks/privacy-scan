@@ -1,0 +1,65 @@
+#!/bin/sh
+# Safety net for this public repository: stops added lines, filenames, binary files, commit
+# messages and commit identities that look private. It knows only the patterns below and the terms
+# in the private denylist, so passing it proves nothing; read the full diff yourself.
+#   privacy-scan staged          the staged change and the identity that will commit it (pre-commit)
+#   privacy-scan message FILE    a commit message (commit-msg)
+#   privacy-scan commits REV...  every commit `git rev-list REV...` lists (pre-push)
+set -u
+denylist="$HOME/.agents-private/denylist"
+generic='(/Users|/home)/[A-Za-z0-9._-]+|BEGIN [A-Z ]*PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,}|xox[abprs]-[A-Za-z0-9-]{10,}|AKIA[0-9A-Z]{16}'
+email='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
+public_email='(git@github\.com|[^ ]*@users\.noreply\.github\.com|[^ ]*@example\.(com|org|net))'
+
+terms=$(mktemp); trap 'rm -f "$terms"' EXIT
+[ -f "$denylist" ] && grep -v '^[[:space:]]*\(#\|$\)' "$denylist" > "$terms"
+bad=0
+
+# check LABEL TEXT: report lines of TEXT that match a private pattern, a non-public email or a denylist term.
+# Called with the text as an argument, never at the end of a pipeline, so bad=1 survives.
+check() {
+  text=$2
+  hits=$({
+    printf '%s\n' "$text" | grep -E -- "$generic"
+    printf '%s\n' "$text" | grep -oE -- "$email" | grep -vxE -- "$public_email"
+    [ ! -s "$terms" ] || printf '%s\n' "$text" | grep -iwF -f "$terms"
+  })
+  [ -z "$hits" ] || { printf '%s:\n%s\n\n' "$1" "$hits" | sed 's/^/  /' >&2; bad=1; }
+}
+# added FILE-DIFF: "path: line" for every added line, plus every added or renamed filename.
+added() { awk '/^\+\+\+ b\//{f=substr($0,7); print f; next} /^\+/ && !/^\+\+\+/{print f ": " substr($0,2)}'; }
+binaries() { awk -F'\t' '$1 == "-" {print $3}'; }
+check_binaries() {
+  [ -n "$2" ] || return 0
+  [ "${PRIVACY_REVIEWED_BINARIES:-}" = 1 ] && return 0
+  printf '  %s: binary files cannot be scanned:\n%s\n  Open each one and check it, then rerun with PRIVACY_REVIEWED_BINARIES=1.\n\n' "$1" "$(printf '%s\n' "$2" | sed 's/^/    /')" >&2
+  bad=1
+}
+
+case "${1:-}" in
+staged)
+  check "commit identity (use your GitHub noreply email: git config user.email)" "$(printf '%s\n%s\n' "$(git var GIT_AUTHOR_IDENT)" "$(git var GIT_COMMITTER_IDENT)" | sed 's/ [0-9]* [-+][0-9]*$//')"
+  check "staged changes" "$(git diff --cached --no-color -U0 --diff-filter=ACMR | added)"
+  check_binaries "staged changes" "$(git diff --cached --numstat --diff-filter=ACMR | binaries)"
+  what="the staged change and commit identity" ;;
+message)
+  check "commit message" "$(grep -v '^#' "$2")"
+  what="the commit message" ;;
+commits)
+  shift; n=0
+  for c in $(git rev-list "$@"); do
+    n=$((n + 1)); label="commit $(git log -1 --format='%h %s' "$c")"
+    check "$label: identity or message" "$(git log -1 --format='%an <%ae>%n%cn <%ce>%n%B' "$c")"
+    check "$label: changes" "$(git show --no-color -U0 --format= --diff-filter=ACMR "$c" | added)"
+    check_binaries "$label" "$(git show --numstat --format= --diff-filter=ACMR "$c" | binaries)"
+  done
+  what="$n outgoing commit(s): identities, messages, filenames and added lines" ;;
+*) echo "usage: privacy-scan staged | message FILE | commits REV..." >&2; exit 2 ;;
+esac
+
+if [ -s "$terms" ]; then source="$(wc -l < "$terms" | tr -d ' ') private terms from $denylist"; else source="NO private denylist at $denylist"; fi
+if [ "$bad" = 1 ]; then
+  echo "privacy-scan: blocked. This repository is public; remove or genericize the lines above." >&2
+  exit 1
+fi
+echo "privacy-scan: checked $what against generic patterns and $source. A scan cannot prove privacy; review the diff yourself." >&2

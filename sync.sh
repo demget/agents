@@ -1,7 +1,8 @@
 #!/bin/sh
 # Syncs ~/.agents with GitHub, only when you ask: `~/.agents/sync.sh --now`.
 # It never commits. Review and commit what should be public first; it refuses to run with
-# uncommitted or untracked changes, then pulls, pushes your commits and re-runs install.sh.
+# uncommitted or untracked changes, then pulls, pushes your commits through the pre-push privacy
+# check and re-runs install.sh.
 set -u
 fail() { echo "sync.sh: $1" >&2; exit 1; }
 
@@ -13,6 +14,7 @@ if [ -n "$(git status --porcelain)" ]; then
   git status --short >&2
   fail "uncommitted changes in ~/.agents; review them, commit only what should be public, then sync again"
 fi
+git config core.hooksPath hooks  # the pre-push hook scans every outgoing commit
 upstream=$(git rev-parse --abbrev-ref '@{upstream}') || fail "no upstream configured; configure it manually"
 previous=$(git rev-parse "$upstream") || fail "cannot read upstream"
 git fetch -q || fail "fetch failed"
