@@ -1,7 +1,7 @@
 ---
 name: council
 description: >-
-  Use when the user wants a pull request or branch judged by a council of other models before it lands: "consult the council", "ask the council if this is safe", "council review", "merge it once they're happy", "get Fable, Sol and Astra to sign off", or /council. Runs Fable 5.2, GPT-6.1 Sol and GPT-6 Astra as read-only reviewers through T3's delegate_task and merges only when all three say it is safe.
+  Use when the user wants a pull request or branch judged by a council of other models before it lands: "consult the council", "ask the council if this is safe", "council review", "merge it once they're happy", "get Fable, Sol and Astra to sign off", or /council. Runs Fable 5.2, GPT-6.2 Sol and GPT-6.2 Astra as read-only reviewers through T3's delegate_task and merges only when all three say it is safe.
 ---
 
 # Council review before merge
@@ -18,9 +18,9 @@ Check `orchestrator_capabilities` first. If a member's provider or model is miss
 
 | Member | `providerInstanceId` | `model` | `options` |
 |---|---|---|---|
-| Fable | `claudeAgent` | `claude-fable-5-2` | `{"effort": "low"}` |
-| Astra | `codex` | `gpt-6-astra` | `{"reasoningEffort": "xhigh", "serviceTier": "default"}` |
-| Sol | `codex` | `gpt-6.1-sol` | `{"reasoningEffort": "xhigh", "serviceTier": "default"}` |
+| Fable | `claudeAgent` | `claude-fable-5-2` | `{"effort": "high"}` |
+| Astra | `codex` | `gpt-6.2-astra` | `{"reasoningEffort": "high", "serviceTier": "default"}` |
+| Sol | `codex` | `gpt-6.2-sol` | `{"reasoningEffort": "high", "serviceTier": "default"}` |
 
 ## Write the brief
 
