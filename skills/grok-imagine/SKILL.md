@@ -51,10 +51,10 @@ Two modes:
 Options: duration **6s** or **10s**; resolution **480p** (default) or **720p**; aspect ratio e.g. `1:1`, `16:9`, `9:16`.
 
 ```bash
-grok -p "Animate the image at <ABS_SRC_PATH>: <MOTION DESCRIPTION>. Duration 6s, 720p, aspect <AR>. Save the resulting video to <ABS_OUT_PATH> and reply with only the absolute path of the saved file." --always-approve
+grok -p "Call your image-to-video tool exactly once with the file <ABS_SRC_PATH> as the start image, then save its result to <ABS_OUT_PATH>. Do not generate a new image, do not inspect or extract frames, do not judge the result and do not regenerate: one call, save, done. Motion prompt for the tool: <MOTION DESCRIPTION>. Duration 6s, 720p, aspect <AR>. Reply with only the absolute path of the saved file." --always-approve --max-turns 6
 ```
 
-Bash timeout: **long, up to 600000 ms** — video gen takes ~1–4 min.
+Bash timeout: **up to 300000 ms**; one call takes under a minute. Never name a model in the prompt: grok picks its latest one. Without the single-call wording grok's agent extracts frames, judges its own take and regenerates, which turns a minute into several, and it may draw a new picture and animate that instead of your source; check that the first frame matches the source.
 
 ### Finding the output
 
@@ -66,7 +66,7 @@ ls -t <cwd>/videos/*.mp4 2>/dev/null | head -1
 
 ### If grok "fails on image input"
 
-The plain `-p` prompt sometimes reports the CLI can't take the image directly; grok then self-recovers by calling its **`image_to_video` tool with model `grok-4.5`** and still produces the clip (it may say "couldn't copy" but the file is saved — check `<ABS_OUT_PATH>` and the `videos/` folder). To steer it directly, add to the prompt: *"use your image_to_video tool (grok-4.5) with this file as the start image."* Verified working: 6s / 720p / 1:1, ~2–3 min, h264 720x720 24fps.
+If grok says it cannot take the image directly, it still calls its image-to-video tool with the file; check `<ABS_OUT_PATH>` and the `videos/` folder.
 
 ### Tips
 
