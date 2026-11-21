@@ -19,8 +19,8 @@ Check `orchestrator_capabilities` first. If a member's provider or model is miss
 | Member | `providerInstanceId` | `model` | `options` |
 |---|---|---|---|
 | Fable | `claudeAgent` | `claude-fable-5-2` | `{"effort": "high"}` |
-| Astra | `codex` | `gpt-6.2-astra` | `{"reasoningEffort": "high", "serviceTier": "default"}` |
-| Sol | `codex` | `gpt-6.2-sol` | `{"reasoningEffort": "high", "serviceTier": "default"}` |
+| Astra | `codex` | `gpt-6.2-astra` | `{"reasoningEffort": "xhigh", "serviceTier": "default"}` |
+| Sol | `codex` | `gpt-6.2-sol` | `{"reasoningEffort": "xhigh", "serviceTier": "default"}` |
 
 ## Write the brief
 
