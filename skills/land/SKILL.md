@@ -1,7 +1,7 @@
 ---
 name: land
 description: >-
-  Use when the user says "land it", "land this", "full send" or invokes /land: they are not watching and want the change taken all the way to a merged PR. Proves the change, gets the council's sign-off, files the PR with the pr skill, babysits CI and review, and merges once the gate passes.
+  Use when the user says "land it", "land this", "full send" or invokes /land: they are not watching and want the change taken all the way to a merged PR. Proves the change, gets the council's sign-off on all but small changes it is sure of, files the PR with the pr skill, babysits CI and review, and merges once the gate passes.
 ---
 
 # Land
@@ -26,14 +26,24 @@ It never overrides:
 
 1. **Finish the change.** The smallest change that meets the request: fix the case that happened, not every case that could. Follow the repository's `AGENTS.md`, including its issue-tracking steps.
 2. **Prove it** (see Proof), then commit with the `commit` skill.
-3. **Council review.** Run the `council` skill on the committed branch, for review only; this skill's merge gate decides the merge. Fix what holds up and run new rounds until all three members say `SAFE`.
+3. **Council review, sized to the change.** Skip it for a small change you are sure of (see When to council). Otherwise run the `council` skill on the committed branch, for review only; this skill's merge gate decides the merge. Fix what holds up and run new rounds until all three members say `SAFE`.
 4. **File the PR** with the `pr` skill, rebased onto the latest default branch. The proof goes in its Evidence section.
 5. **Babysit it** with the `babysit` skill: fix CI failures and real review findings, proving each fix before you push it.
-6. **Re-council a moved head.** The council must have said `SAFE` on the exact SHA you merge. If the head moved after step 3, run one more round on it; when the only change is a conflict-free rebase, say so in the brief.
+6. **Re-check a moved head.** If the council reviewed the change, it must have said `SAFE` on the exact SHA you merge: if the head moved after step 3, run one more round on it, and when the only change is a conflict-free rebase, say so in the brief. If you skipped the council, test the final diff against When to council again and run the council if it no longer qualifies.
 7. **Merge** when the merge gate passes.
 8. **Report** (see Report).
 
 Stay active from step 1 to step 8. Ending the turn without something that will wake you stops the work, because nobody prompts you again. Council completions wake the thread; for the PR, use `babysit`'s watcher. If you stop before the merge, unwatch the PR first.
+
+## When to council
+
+Skip the council only when all of these hold:
+
+- **Small:** one concern, about 50 changed lines or fewer outside generated files and lockfiles, readable in one pass.
+- **Low stakes:** it touches nothing where a missed bug is costly or hard to undo, such as money, auth, permissions, secrets, data migrations or deletion, concurrency, or an interface other code depends on.
+- **Sure:** you can say why each changed line is right, and your proof covers every one of them.
+
+Medium and larger changes always go to the council, and so does any change you hesitate over. When you skip it, say so and why in the PR body.
 
 ## Proof
 
@@ -51,7 +61,7 @@ If you cannot find a way to prove a change, you do not have full confidence: ask
 All of these hold on the latest head:
 
 - Your proof covers every change in the diff.
-- All three council members said `SAFE` on this SHA.
+- All three council members said `SAFE` on this SHA, or the final diff still qualifies to skip the council.
 - Required checks are green; when the base requires none, every check that ran is green. A skipped or unavailable check is not a pass.
 - Every review comment is fixed or answered with a written reason, and no human review still requests changes.
 - The branch is up to date with its base and GitHub reports it mergeable (`mergeStateStatus` is `CLEAN`).
@@ -76,4 +86,4 @@ Decide everything else with sensible defaults and list those decisions in the re
 
 ## Report
 
-Lead with the outcome: merged or not, the PR link and the merge commit. Then the proof, each council member's final verdict, what review and CI changed, and every decision you made for the user.
+Lead with the outcome: merged or not, the PR link and the merge commit. Then the proof, each council member's final verdict or why you skipped the council, what review and CI changed, and every decision you made for the user.
